@@ -1,10 +1,10 @@
-﻿using BankAPI.Models;
-using BankAPI.Services;
-using Microsoft.AspNetCore.Http;
+﻿using Entities.Models;
+using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using BankAPI.Models;
 
 namespace BankAPI.Controllers
 {

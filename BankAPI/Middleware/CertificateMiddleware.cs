@@ -1,4 +1,4 @@
-﻿using BankAPI.Models;
+﻿using Contracts.Implementations;
 
 namespace BankAPI.Middleware
 {

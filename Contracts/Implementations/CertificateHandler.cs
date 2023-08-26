@@ -1,7 +1,7 @@
-﻿using BankAPI.Services;
+﻿using Contracts.Services;
 using System.Security.Cryptography.X509Certificates;
 
-namespace BankAPI.Models
+namespace Contracts.Implementations
 {
     public class CertificateHandler : ICertificateHandler
     {

@@ -1,5 +1,6 @@
-﻿using BankAPI.Models.Device;
-using Microsoft.AspNetCore.Http;
+﻿using Contracts.Implementations;
+using Contracts.Services;
+using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using UAParser;
 
@@ -9,6 +10,12 @@ namespace BankAPI.Controllers
     [ApiController]
     public class DeviceTesterController : ControllerBase
     {
+        private readonly IDeviceMapper _deviceMapper;
+
+        public DeviceTesterController(IDeviceMapper deviceMapper)
+        {
+            _deviceMapper = deviceMapper;
+        }
 
         [HttpGet]
         public IActionResult GetDevice()
@@ -17,7 +24,7 @@ namespace BankAPI.Controllers
             var uaParser = Parser.GetDefault();
             ClientInfo info = uaParser.Parse(userAgent);
 
-            var deviceMapper = new DeviceMapper();
+            var deviceMapper = _deviceMapper;
             Devices deviceType = deviceMapper.MapDevice(info);
 
             return Ok($"Detected device: {deviceType}\nVersion: {info.OS.Major}");

@@ -1,10 +1,11 @@
-﻿using UAParser;
+﻿using Contracts.Services;
+using Entities.Models;
+using UAParser;
 
-namespace BankAPI.Models.Device
+namespace Contracts.Implementations
 {
-    public class DeviceMapper
+    public class DeviceMapper : IDeviceMapper
     {
-
         private Dictionary<string, Devices> _osToDeviceMap;
 
         public DeviceMapper()
@@ -40,14 +41,11 @@ namespace BankAPI.Models.Device
         {
             string osFamily = clientInfo.OS.Family;
 
-            if(_osToDeviceMap.TryGetValue(osFamily, out Devices devicesType))
+            if (_osToDeviceMap.TryGetValue(osFamily, out Devices devicesType))
             {
                 return devicesType;
             }
             return Devices.Unknown;
         }
-
-
-
     }
 }

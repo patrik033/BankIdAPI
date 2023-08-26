@@ -1,4 +1,4 @@
-﻿namespace BankAPI.Models.User.Response
+﻿namespace Entities.Models.User.Response
 {
     public class Device
     {

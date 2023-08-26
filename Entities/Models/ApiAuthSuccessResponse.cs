@@ -1,4 +1,4 @@
-﻿namespace BankAPI.Models
+﻿namespace Entities.Models
 {
     public class ApiAuthSuccessResponse
     {

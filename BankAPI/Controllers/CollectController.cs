@@ -1,12 +1,11 @@
-﻿using BankAPI.Models;
-using BankAPI.Services;
-using Microsoft.AspNetCore.Http;
+﻿using Entities.Models;
+using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 using System.Net;
 using System.Text.Json;
-using BankAPI.Models.User;
-using BankAPI.Models.User.Response;
+using Entities.Models.User.Response;
+using BankAPI.Models;
 
 namespace BankAPI.Controllers
 {
@@ -17,12 +16,19 @@ namespace BankAPI.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICertificateHandler _certificateHandler;
         private readonly IConfiguration _configuration;
+        private readonly IBankIdAuthenticationService _bankIdAuthenticationService;
 
-        public CollectController(IHttpClientFactory httpClientFactory, ICertificateHandler certificateHandler, IConfiguration configuration)
+        public CollectController
+            (IHttpClientFactory httpClientFactory,
+            ICertificateHandler certificateHandler,
+            IConfiguration configuration,
+            IBankIdAuthenticationService bankIdAuthenticationService
+            )
         {
             _httpClientFactory = httpClientFactory;
             _certificateHandler = certificateHandler;
             _configuration = configuration;
+            _bankIdAuthenticationService = bankIdAuthenticationService;
         }
 
         [HttpPost]
@@ -53,7 +59,7 @@ namespace BankAPI.Controllers
                     var jsonData = JsonSerializer.Serialize(orderRef);
                     var jsonContent = new JsonContentWithoutEncoding(jsonData);
                     request.Content = jsonContent;
-
+                    
                     var response = await httpClient.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
@@ -62,7 +68,8 @@ namespace BankAPI.Controllers
 
                         if (responseObject.status == "complete" && responseObject.completionData != null)
                         {
-                            var authService = new BankIdAuthenticationService(_configuration); // Replace with your actual secret key
+                            var authService = _bankIdAuthenticationService;
+                            //var authService = new BankIdAuthenticationService(_configuration); // Replace with your actual secret key
                             var jwtToken = authService.GenerateJwtToken(responseObject.completionData);
 
                             // Return the JWT token as a response
@@ -70,7 +77,7 @@ namespace BankAPI.Controllers
                         }
                         else
                         {
-                            // Handle other cases if needed
+                            // up to frontend to handle
                             return Ok(responseContent);
                         }
                     }

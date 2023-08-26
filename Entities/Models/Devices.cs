@@ -1,4 +1,4 @@
-﻿namespace BankAPI.Models.Device
+﻿namespace Entities.Models
 {
     public enum Devices
     {

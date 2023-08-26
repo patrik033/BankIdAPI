@@ -1,24 +1,12 @@
 ﻿
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Unicode;
-using static System.Net.WebRequestMethods;
-using BankAPI.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using BankAPI.Services;
-using System.Runtime.ConstrainedExecution;
-using System;
-using UAParser;
+using Contracts.Services;
 
+using Entities.Models;
+using BankAPI.Models;
 
 namespace BankAPI.Controllers
 {

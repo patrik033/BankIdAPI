@@ -1,8 +1,8 @@
 
-using BankAPI.Extensions;
-using BankAPI.Models;
-using BankAPI.Services;
+using Contracts.Implementations;
+using Contracts.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -31,10 +31,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 //services
 builder.Services.AddSingleton<ICertificateHandler>(provider =>
 {
-    
     var certFilePath = @"C:\Users\patri\source\repos\BankIdAPI\BankAPI\Certificates\FPTestcert4.p12";
     return new CertificateHandler(certFilePath);
 });
+
+builder.Services.AddSingleton<IBankIdAuthenticationService>(provider =>
+{
+    var config = builder.Configuration;
+    return new BankIdAuthenticationService(config); // Replace with your actual secret key
+});
+builder.Services.AddSingleton<IDeviceMapper, DeviceMapper>();
 //builder.Services.AddSingleton<IHttpContextAccessor, IHttpContextAccessor>();
 
 builder.Services.AddCors(options =>

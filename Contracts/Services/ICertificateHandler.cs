@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 
-namespace BankAPI.Services
+namespace Contracts.Services
 {
     public interface ICertificateHandler
     {

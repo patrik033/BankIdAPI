@@ -1,15 +1,14 @@
-﻿using BankAPI.Models.User.Response;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Security.Cryptography;
+using Entities.Models.User.Response;
+using Microsoft.Extensions.Configuration;
+using Contracts.Services;
 
-namespace BankAPI.Models.User
+namespace Contracts.Implementations
 {
-    public class BankIdAuthenticationService
+    public class BankIdAuthenticationService : IBankIdAuthenticationService
     {
 
         private readonly IConfiguration _configuration;
