@@ -1,11 +1,10 @@
-﻿namespace Entities.Models.User.Response
+﻿namespace Entities.Models.Response
 {
     public class CompletionData
     {
         public string bankIdIssueDate { get; set; }
-        public Device device { get; set; }
         public string ocspResponse { get; set; }
         public string signature { get; set; }
-        public User user { get; set; }
+        public UserData user { get; set; }
     }
 }

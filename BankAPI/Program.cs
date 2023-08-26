@@ -1,6 +1,7 @@
 
+using BankAPI.Extensions;
 using Contracts.Implementations;
-using Contracts.Services;
+using Contracts.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -15,25 +16,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = true;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
-//services
-builder.Services.AddSingleton<ICertificateHandler>(provider =>
-{
-    var certFilePath = @"C:\Users\patri\source\repos\BankIdAPI\BankAPI\Certificates\FPTestcert4.p12";
-    return new CertificateHandler(certFilePath);
-});
+//extensions
+builder.Services.ConfigureAuthentication(builder.Configuration);
+builder.Services.ConfigureCertificateHandler();
+builder.Services.ConfigureBankIdAuthenticationService(builder.Configuration);
+builder.Services.ConfigureDeviceMapper();
+builder.Services.ConfigureCorse();
+
+
 
 builder.Services.AddSingleton<IBankIdAuthenticationService>(provider =>
 {
@@ -43,15 +33,7 @@ builder.Services.AddSingleton<IBankIdAuthenticationService>(provider =>
 builder.Services.AddSingleton<IDeviceMapper, DeviceMapper>();
 //builder.Services.AddSingleton<IHttpContextAccessor, IHttpContextAccessor>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.AllowAnyOrigin();
-        builder.AllowAnyMethod();
-        builder.AllowAnyHeader();
-    });
-});
+
 
 
 var app = builder.Build();

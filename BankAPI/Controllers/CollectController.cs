@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 using System.Net;
 using System.Text.Json;
-using Entities.Models.User.Response;
-using BankAPI.Models;
+using Contracts.Interfaces;
+using Entities.Models.Response;
 
 namespace BankAPI.Controllers
 {
@@ -56,15 +56,13 @@ namespace BankAPI.Controllers
                 // API endpoint URL for the POST request.
                 using (var request = new HttpRequestMessage(HttpMethod.Post, "collect"))
                 {
-                    var jsonData = JsonSerializer.Serialize(orderRef);
-                    var jsonContent = new JsonContentWithoutEncoding(jsonData);
-                    request.Content = jsonContent;
-                    
+                    ReturnWithoutEncoding(orderRef, request);
+
                     var response = await httpClient.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
-                        var responseObject = JsonSerializer.Deserialize<ApiResponseCollect>(responseContent); // Deserialize the response JSON
+                        var responseObject = JsonSerializer.Deserialize<CollectResponse>(responseContent); // Deserialize the response JSON
 
                         if (responseObject.status == "complete" && responseObject.completionData != null)
                         {
@@ -73,7 +71,7 @@ namespace BankAPI.Controllers
                             var jwtToken = authService.GenerateJwtToken(responseObject.completionData);
 
                             // Return the JWT token as a response
-                            return Ok(new { status = responseObject.status,token = jwtToken });
+                            return Ok(new { status = responseObject.status, token = jwtToken });
                         }
                         else
                         {
@@ -98,6 +96,13 @@ namespace BankAPI.Controllers
                 // Handle other exceptions that may occur during the API call.
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
+        }
+
+        private static void ReturnWithoutEncoding(OrderRef orderRef, HttpRequestMessage request)
+        {
+            var jsonData = JsonSerializer.Serialize(orderRef);
+            var jsonContent = new JsonContentWithoutEncoding(jsonData);
+            request.Content = jsonContent;
         }
     }
 }

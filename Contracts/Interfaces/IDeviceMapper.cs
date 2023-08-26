@@ -1,7 +1,7 @@
 ﻿using Entities.Models;
 using UAParser;
 
-namespace Contracts.Services
+namespace Contracts.Interfaces
 {
     public interface IDeviceMapper
     {

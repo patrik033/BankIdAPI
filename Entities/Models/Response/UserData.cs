@@ -1,6 +1,6 @@
-﻿namespace Entities.Models.User.Response
+﻿namespace Entities.Models.Response
 {
-    public class User
+    public class UserData
     {
         public string givenName { get; set; }
         public string name { get; set; }

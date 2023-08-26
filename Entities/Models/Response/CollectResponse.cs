@@ -1,6 +1,6 @@
-﻿namespace Entities.Models.User.Response
+﻿namespace Entities.Models.Response
 {
-    public class ApiResponseCollect
+    public class CollectResponse
     {
         public string orderRef { get; set; }
         public string status { get; set; }

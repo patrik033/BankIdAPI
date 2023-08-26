@@ -1,11 +1,11 @@
-﻿using Entities.Models.User.Response;
+﻿using Entities.Models.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Services
+namespace Contracts.Interfaces
 {
     public interface IBankIdAuthenticationService
     {

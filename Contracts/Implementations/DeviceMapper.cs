@@ -1,4 +1,4 @@
-﻿using Contracts.Services;
+﻿using Contracts.Interfaces;
 using Entities.Models;
 using UAParser;
 

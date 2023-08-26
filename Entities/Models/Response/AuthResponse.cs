@@ -1,6 +1,6 @@
-﻿namespace Entities.Models
+﻿namespace Entities.Models.Response
 {
-    public class ApiAuthSuccessResponse
+    public class AuthResponse
     {
         public string orderRef { get; set; }
         public string autoStartToken { get; set; }

@@ -1,4 +1,4 @@
-﻿using Contracts.Services;
+﻿using Contracts.Interfaces;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Contracts.Implementations

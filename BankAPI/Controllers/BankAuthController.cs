@@ -6,7 +6,8 @@ using System.Text.Json;
 using Contracts.Services;
 
 using Entities.Models;
-using BankAPI.Models;
+using Contracts.Interfaces;
+using Entities.Models.Response;
 
 namespace BankAPI.Controllers
 {
@@ -51,15 +52,13 @@ namespace BankAPI.Controllers
                 // API endpoint URL for the POST request.
                 using (var request = new HttpRequestMessage(HttpMethod.Post, "auth"))
                 {
-                    var jsonData = JsonSerializer.Serialize(endUserIp);
-                    var jsonContent = new JsonContentWithoutEncoding(jsonData);
-                    request.Content = jsonContent;
+                    ReturnWithoutEncoding(endUserIp, request);
                     var response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
-                        var apiResponse = JsonSerializer.Deserialize<ApiAuthSuccessResponse>(responseContent);
+                        var apiResponse = JsonSerializer.Deserialize<AuthResponse>(responseContent);
                         return Ok(apiResponse);
                     }
 
@@ -78,6 +77,7 @@ namespace BankAPI.Controllers
             }
         }
 
+
         [HttpGet]
         public  IActionResult GetCertificate()
         {
@@ -91,6 +91,12 @@ namespace BankAPI.Controllers
             return File(loadedCertificate.RawData, "application/x-pkcs12", "certificate.pfx");
         }
 
+        private static void ReturnWithoutEncoding(EndUserIp endUserIp, HttpRequestMessage request)
+        {
+            var jsonData = JsonSerializer.Serialize(endUserIp);
+            var jsonContent = new JsonContentWithoutEncoding(jsonData);
+            request.Content = jsonContent;
+        }
       
     }
 }

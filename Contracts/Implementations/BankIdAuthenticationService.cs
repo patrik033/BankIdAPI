@@ -2,9 +2,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Entities.Models.User.Response;
 using Microsoft.Extensions.Configuration;
-using Contracts.Services;
+using Contracts.Interfaces;
+using Entities.Models.Response;
 
 namespace Contracts.Implementations
 {
