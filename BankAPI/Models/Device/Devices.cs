@@ -1,0 +1,29 @@
+﻿namespace BankAPI.Models.Device
+{
+    public enum Devices
+    {
+        Android,
+        IOS,
+        BlackBerryOS,
+        CentOS,
+        ChromeOS,
+        Fedora,
+        GoogleTV,
+        iOS,
+        LinuxMint,
+        MacOSX,
+        Mandriva,
+        Other,
+        PCLinuxOS,
+        Puppy,
+        RedHat,
+        Slackware,
+        SymbianOS,
+        Symbian3,
+        WindowsPhone,
+        Linux,
+        MacOS,
+        Windows,
+        Unknown
+    }
+}
