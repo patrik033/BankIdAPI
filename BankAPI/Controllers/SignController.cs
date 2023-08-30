@@ -69,7 +69,16 @@ namespace BankAPI.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
 
-            return Ok();
+           
+        }
+
+        [HttpGet]
+        public IActionResult GetFile()
+        {
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var path = Path.Combine(basePath, "Certificates", "Sorting.pdf");
+            var fileContens = System.IO.File.ReadAllBytes(path);
+            return File(fileContens, "application/pdf", "Sorting.pdf");
         }
     }
 }

@@ -77,26 +77,15 @@ namespace BankAPI.Controllers
             }
         }
 
-
-        [HttpGet]
-        public  IActionResult GetCertificate()
-        {
-            var loadedCertificate = _certificateHandler.GetCertificate2();
-            if (loadedCertificate == null)
-            {
-                return BadRequest("No files were found");
-            }
-
-            // Return the certificate file with the content type "application/x-pkcs12"
-            return File(loadedCertificate.RawData, "application/x-pkcs12", "certificate.pfx");
-        }
-
         private static void ReturnWithoutEncoding(EndUserIp endUserIp, HttpRequestMessage request)
         {
             var jsonData = JsonSerializer.Serialize(endUserIp);
             var jsonContent = new JsonContentWithoutEncoding(jsonData);
             request.Content = jsonContent;
         }
+
+
+      
       
     }
 }
