@@ -42,8 +42,6 @@ namespace BankAPI.Controllers
                 using (var request = new HttpRequestMessage(HttpMethod.Post, "sign"))
                 {
 
-                    
-
                     var jsonData = JsonSerializer.Serialize(signRequest);
                     var jsonContent = new JsonContentWithoutEncoding(jsonData);
                     request.Content = jsonContent;
