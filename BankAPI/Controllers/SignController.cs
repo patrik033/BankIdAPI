@@ -2,11 +2,24 @@
 using Contracts.Services;
 using Entities.Models;
 using Entities.Models.Response;
+using iText.IO.Image;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
+using PdfSharpCore.Pdf.IO;
+using Syncfusion.Drawing;
+using Syncfusion.Pdf;
+using Syncfusion.Pdf.Graphics;
+using Syncfusion.Pdf.Parsing;
+using Syncfusion.Pdf.Security;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using PdfDocument = PdfSharpCore.Pdf.PdfDocument;
+using PdfPage = PdfSharpCore.Pdf.PdfPage;
 
 namespace BankAPI.Controllers
 {
@@ -27,6 +40,7 @@ namespace BankAPI.Controllers
         {
             try
             {
+
                 var certificate = _certificateHandler.GetCertificate2();
                 var handler = new HttpClientHandler();
                 handler.ClientCertificates.Add(certificate);
@@ -47,13 +61,13 @@ namespace BankAPI.Controllers
                     request.Content = jsonContent;
 
                     var response = await httpClient.SendAsync(request);
-                    if(response.IsSuccessStatusCode)
+                    if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         var apiResponse = JsonSerializer.Deserialize<AuthResponse>(responseContent);
                         return Ok(apiResponse);
                     }
-                    return BadRequest(await response.Content.ReadAsStringAsync()); 
+                    return BadRequest(await response.Content.ReadAsStringAsync());
                 }
             }
             catch (HttpRequestException ex)
@@ -67,7 +81,40 @@ namespace BankAPI.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
 
-           
+
+        }
+        [HttpPost]
+        [Route("upload")]
+        public IActionResult UploadFile(IFormFile file, [FromForm] string user)
+        {
+
+            userData userData = JsonSerializer.Deserialize<userData>(user);
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var cert = Path.Combine(basePath, "Certificates", "client-identity.p12");
+            var img = Path.Combine(basePath, "Certificates", "toys-small.jpg");
+            X509Certificate2 certificate = new X509Certificate2(cert, "password");
+
+            var some = new PdfServices();
+
+            byte[] signedPdfBytes = some.SignPdf(file, certificate, img,userData);
+            return File(signedPdfBytes, "application/pdf", "SignedOutput.pdf");
+        }
+
+        [HttpPost]
+        [Route("signpdf")]
+        public IActionResult SignPdf(IFormFile file, [FromForm] string user)
+        {
+
+            userData userData = JsonSerializer.Deserialize<userData>(user);
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var cert = Path.Combine(basePath, "Certificates", "client-identity.p12");
+            var img = Path.Combine(basePath, "Certificates", "toys-small.jpg");
+            X509Certificate2 certificate = new X509Certificate2(cert, "password");
+       
+                var some = new PdfServices();
+   
+                byte[] signedPdfBytes = some.SignPdf(file, certificate,img, userData);
+                return File(signedPdfBytes, "application/pdf", "SignedOutput.pdf");
         }
 
         [HttpGet]
@@ -78,5 +125,7 @@ namespace BankAPI.Controllers
             var fileContens = System.IO.File.ReadAllBytes(path);
             return File(fileContens, "application/pdf", "Sorting.pdf");
         }
+
+        
     }
 }

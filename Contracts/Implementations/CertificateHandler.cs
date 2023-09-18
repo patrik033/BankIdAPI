@@ -115,5 +115,13 @@ namespace Contracts.Implementations
             LoadCertificateIfNeeded();
             return _certificate;
         }
+
+        public X509Certificate2 GetCertificateForPdfCertification()
+        {
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var path = Path.Combine(basePath, "Certificates", "client-identity.p12");
+            X509Certificate2 cert = new X509Certificate2("client-identity.p12", "password", X509KeyStorageFlags.Exportable);
+            return cert;
+        }
     }
 }

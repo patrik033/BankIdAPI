@@ -71,7 +71,7 @@ namespace BankAPI.Controllers
                             var jwtToken = authService.GenerateJwtToken(responseObject.completionData);
 
                             // Return the JWT token as a response
-                            return Ok(new { status = responseObject.status, token = jwtToken });
+                            return Ok(new { status = responseObject.status, token = jwtToken,response = responseObject });
                         }
                         else
                         {
