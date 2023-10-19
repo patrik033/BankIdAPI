@@ -24,18 +24,19 @@ namespace BankAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostCollect([FromBody] OrderRef orderRef)
         {
+
+            const string testBaseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
+
             try
             {
                 var certificate = _certificateHandler.GetCertificate2();
-
                 var handler = new HttpClientHandler();
                 handler.ClientCertificates.Add(certificate);
                 handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 var httpClient = new HttpClient(handler);
-                httpClient.BaseAddress = new Uri("https://appapi2.test.bankid.com/rp/v6.0/");
+                httpClient.BaseAddress = new Uri(testBaseAddress);
                 httpClient.DefaultRequestHeaders.Accept.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 

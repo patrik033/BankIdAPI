@@ -16,7 +16,6 @@ namespace BankAPI
         public byte[] SignPdf(IFormFile pdfFile, X509Certificate2 certificate,string imagePath,userData? userData)
         {
 
-
             using (PdfLoadedDocument loadedDocument = new PdfLoadedDocument(pdfFile.OpenReadStream()))
             {
                 //Add a new page to be signed

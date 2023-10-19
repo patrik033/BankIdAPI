@@ -7,7 +7,6 @@ namespace BankAPI.Middleware
         private readonly RequestDelegate _next;
         private readonly string _certFilePath;
 
-
         public CertificateMiddleware(RequestDelegate next,string certFilePath)
         {
             _next = next;

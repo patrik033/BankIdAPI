@@ -22,6 +22,7 @@ builder.Services.ConfigureCertificateHandler();
 builder.Services.ConfigureBankIdAuthenticationService(builder.Configuration);
 builder.Services.ConfigureDeviceMapper();
 builder.Services.ConfigureCorse();
+
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2V1hhQlJAfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hSn5ad0ZiXHtedXFTR2Ve");
 
 
@@ -31,9 +32,6 @@ builder.Services.AddSingleton<IBankIdAuthenticationService>(provider =>
     return new BankIdAuthenticationService(config); // Replace with your actual secret key
 });
 builder.Services.AddSingleton<IDeviceMapper, DeviceMapper>();
-//builder.Services.AddSingleton<IHttpContextAccessor, IHttpContextAccessor>();
-
-
 
 
 var app = builder.Build();

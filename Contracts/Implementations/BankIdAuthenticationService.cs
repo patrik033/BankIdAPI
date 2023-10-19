@@ -47,6 +47,7 @@ namespace Contracts.Implementations
                     notBefore: DateTime.UtcNow,
                     expires: expiresAt,
                     signingCredentials: signIn);
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

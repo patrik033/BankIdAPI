@@ -1,5 +1,4 @@
-﻿using Contracts.Implementations;
-using Contracts.Interfaces;
+﻿using Contracts.Interfaces;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using UAParser;

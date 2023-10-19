@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Contracts.Services;
-
 using Entities.Models;
 using Contracts.Interfaces;
 using Entities.Models.Response;
@@ -83,9 +82,5 @@ namespace BankAPI.Controllers
             var jsonContent = new JsonContentWithoutEncoding(jsonData);
             request.Content = jsonContent;
         }
-
-
-      
-      
     }
 }

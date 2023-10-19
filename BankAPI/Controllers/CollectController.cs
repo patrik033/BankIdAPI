@@ -34,22 +34,25 @@ namespace BankAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CollectPost([FromBody] OrderRef orderRef)
         {
+            const string testBaseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
+
             try
             {
                 // Load the client certificate from a file or any secure storage.
                 var certificate = _certificateHandler.GetCertificate2();
 
                 // Create an HttpClientHandler and assign the client certificate to it.
-                var handler = new HttpClientHandler();
-                handler.ClientCertificates.Add(certificate);
+                var clientHandler = new HttpClientHandler();
+                clientHandler.ClientCertificates.Add(certificate);
                 // Disable SSL certificate validation (Not recommended for production use!)
-                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
                 // Ensure TLS 1.2 is used for the API call.
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
+
                 // Instantiate the HttpClient with the custom HttpClientHandler.
-                var httpClient = new HttpClient(handler);
-                httpClient.BaseAddress = new Uri("https://appapi2.test.bankid.com/rp/v6.0/");
+                var httpClient = new HttpClient(clientHandler);
+                httpClient.BaseAddress = new Uri(testBaseAddress);
                 httpClient.DefaultRequestHeaders.Accept.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -57,33 +60,8 @@ namespace BankAPI.Controllers
                 using (var request = new HttpRequestMessage(HttpMethod.Post, "collect"))
                 {
                     ReturnWithoutEncoding(orderRef, request);
-
                     var response = await httpClient.SendAsync(request);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        var responseObject = JsonSerializer.Deserialize<CollectResponse>(responseContent); // Deserialize the response JSON
-
-                        if (responseObject.status == "complete" && responseObject.completionData != null)
-                        {
-                            var authService = _bankIdAuthenticationService;
-                            //var authService = new BankIdAuthenticationService(_configuration); // Replace with your actual secret key
-                            var jwtToken = authService.GenerateJwtToken(responseObject.completionData);
-
-                            // Return the JWT token as a response
-                            return Ok(new { status = responseObject.status, token = jwtToken,response = responseObject });
-                        }
-                        else
-                        {
-                            // up to frontend to handle
-                            return Ok(responseContent);
-                        }
-                    }
-                    else
-                    {
-                        var content = await response.Content.ReadAsStringAsync();
-                        return BadRequest(content);
-                    }
+                    return await NewMethod(response);
                 }
             }
             catch (HttpRequestException ex)
@@ -95,6 +73,33 @@ namespace BankAPI.Controllers
             {
                 // Handle other exceptions that may occur during the API call.
                 return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        private async Task<IActionResult> NewMethod(HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseObject = JsonSerializer.Deserialize<CollectResponse>(responseContent); // Deserialize the response JSON
+
+                if (responseObject.status == "complete" && responseObject.completionData != null)
+                {
+                    var authService = _bankIdAuthenticationService;
+                    var jwtToken = authService.GenerateJwtToken(responseObject.completionData);
+                    // Return the JWT token as a response
+                    return Ok(new { status = responseObject.status, token = jwtToken, response = responseObject });
+                }
+                else
+                {
+                    return Ok(responseContent);
+                }
+            }
+            else
+            {
+                //fropntend will handle here
+                var content = await response.Content.ReadAsStringAsync();
+                return BadRequest(content);
             }
         }
 

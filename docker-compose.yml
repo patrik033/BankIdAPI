@@ -1,0 +1,7 @@
+services:
+  bankapi:
+    image: atthen/bankapi:latest
+    build:
+      dockerfile: BankAPI/Dockerfile
+    ports:
+      - "5000:80"
