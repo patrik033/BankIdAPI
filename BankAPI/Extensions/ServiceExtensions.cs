@@ -1,4 +1,5 @@
 ﻿using Contracts.Implementations;
+using Contracts.Implementations.ExtensionImplementations;
 using Contracts.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -44,10 +45,23 @@ namespace BankAPI.Extensions
             services.AddSingleton<ICertificateHandler>(provider =>
             {
                 string basePath = AppDomain.CurrentDomain.BaseDirectory;
-                var path = Path.Combine(basePath,"Certificates", "FPTestcert4.p12");
+                var path = Path.Combine(basePath, "Certificates", "FPTestcert4.p12");
                 return new CertificateHandler(path);
             });
+
+            services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
         }
+
+        public static async Task ConfigureAzureCertificateHandler(this IServiceCollection services, string keyVaultUrl, string certificateName)
+        {
+            var certificateHandler = new AzureCertificateHandler();
+            await certificateHandler.Initialize(keyVaultUrl, certificateName);
+
+            services.AddSingleton<IAzureCertificate>(certificateHandler);
+            services.AddSingleton<ICertificateProvider, AzureCertificateProvider>();
+        }
+
+
 
         public static void ConfigureBankIdAuthenticationService(this IServiceCollection services, IConfiguration configuration)
         {
@@ -55,11 +69,6 @@ namespace BankAPI.Extensions
             {
                 return new BankIdAuthenticationService(configuration);
             });
-        }
-
-        public static void ConfigureDeviceMapper(this IServiceCollection services)
-        {
-            services.AddSingleton<IDeviceMapper,DeviceMapper>();
         }
     }
 }

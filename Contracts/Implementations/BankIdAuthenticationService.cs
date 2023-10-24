@@ -38,8 +38,8 @@ namespace Contracts.Implementations
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var signIn = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken
+
                 (
                     _configuration["Jwt:Issuer"],
                     _configuration["Jwt:Audience"],

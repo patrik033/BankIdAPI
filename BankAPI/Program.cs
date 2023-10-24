@@ -3,9 +3,7 @@ using BankAPI.Extensions;
 using Contracts.Implementations;
 using Contracts.Interfaces;
 
-
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -15,21 +13,22 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 //extensions
 builder.Services.ConfigureAuthentication(builder.Configuration);
+
+//initialize the azureCertificate
+//since it can take some time to retrieve the certificate it best done when we start the app
+//await builder.Services.ConfigureAzureCertificateHandler("https://some.vault.azure.net/", "Bank");
 builder.Services.ConfigureCertificateHandler();
 builder.Services.ConfigureBankIdAuthenticationService(builder.Configuration);
-builder.Services.ConfigureDeviceMapper();
+
 builder.Services.ConfigureCorse();
 
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2V1hhQlJAfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hSn5ad0ZiXHtedXFTR2Ve");
-
 
 builder.Services.AddSingleton<IBankIdAuthenticationService>(provider =>
 {
     var config = builder.Configuration;
     return new BankIdAuthenticationService(config); // Replace with your actual secret key
 });
-builder.Services.AddSingleton<IDeviceMapper, DeviceMapper>();
-
 
 var app = builder.Build();
 

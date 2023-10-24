@@ -17,11 +17,11 @@ namespace BankAPI.Controllers
     public class SignController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ICertificateHandler _certificateHandler;
-        public SignController(IHttpClientFactory httpClientFactory, ICertificateHandler certificateHandler)
+        private readonly ICertificateProvider _certificateProvider;
+        public SignController(IHttpClientFactory httpClientFactory, ICertificateProvider certificateProvicer)
         {
             _httpClientFactory = httpClientFactory;
-            _certificateHandler = certificateHandler;
+            _certificateProvider = certificateProvicer;
         }
 
         [HttpPost]
@@ -29,7 +29,7 @@ namespace BankAPI.Controllers
         {
             try
             {
-                var certificate = _certificateHandler.GetCertificate2();
+                var certificate = _certificateProvider.GetCertificate();
                 var handler = new HttpClientHandler();
                 handler.ClientCertificates.Add(certificate);
 
@@ -86,21 +86,6 @@ namespace BankAPI.Controllers
             return File(signedPdfBytes, "application/pdf", "SignedOutput.pdf");
         }
 
-        [HttpPost]
-        [Route("signpdf")]
-        public IActionResult SignPdf(IFormFile file, [FromForm] string user)
-        {
-            userData userData = JsonSerializer.Deserialize<userData>(user);
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            var cert = Path.Combine(basePath, "Certificates", "client-identity.p12");
-            var img = Path.Combine(basePath, "Certificates", "toys-small.jpg");
-            X509Certificate2 certificate = new X509Certificate2(cert, "password");
-       
-                var pdfService = new PdfServices();
-   
-                byte[] signedPdfBytes = pdfService.SignPdf(file, certificate,img, userData);
-                return File(signedPdfBytes, "application/pdf", "SignedOutput.pdf");
-        }
 
         [HttpGet]
         public IActionResult GetFile()

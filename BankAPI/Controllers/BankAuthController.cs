@@ -7,23 +7,28 @@ using Contracts.Services;
 using Entities.Models;
 using Contracts.Interfaces;
 using Entities.Models.Response;
+using Azure.Identity;
+using System.Security.Cryptography.X509Certificates;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace BankAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
 
-    
+
     public class BankAuthController : ControllerBase
     {
 
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ICertificateHandler _certificateHandler;
+        private readonly ICertificateProvider _certificateProvider;
 
-        public BankAuthController(IHttpClientFactory httpClientFactory,ICertificateHandler certificateHandler)
+        public BankAuthController(IHttpClientFactory httpClientFactory,ICertificateProvider certificateProvider)
         {
             _httpClientFactory = httpClientFactory;
-            _certificateHandler = certificateHandler;
+            _certificateProvider = certificateProvider;
         }
 
         [HttpPost]
@@ -31,12 +36,16 @@ namespace BankAPI.Controllers
         {
             try
             {
+
+
+
+
                 // Load the client certificate from a file or any secure storage.
-                var certificate =  _certificateHandler.GetCertificate2();
+                var certificatee = _certificateProvider.GetCertificate();
 
                 // Create an HttpClientHandler and assign the client certificate to it.
                 var handler = new HttpClientHandler();
-                handler.ClientCertificates.Add(certificate);
+                handler.ClientCertificates.Add(certificatee);
                 // Disable SSL certificate validation (Not recommended for production use!)
                 handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
                 // Ensure TLS 1.2 is used for the API call.

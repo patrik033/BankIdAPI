@@ -6,6 +6,10 @@ using System.Net;
 using System.Text.Json;
 using Contracts.Interfaces;
 using Entities.Models.Response;
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
+using System.Security.Cryptography.X509Certificates;
 
 namespace BankAPI.Controllers
 {
@@ -14,21 +18,20 @@ namespace BankAPI.Controllers
     public class CollectController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ICertificateHandler _certificateHandler;
         private readonly IConfiguration _configuration;
         private readonly IBankIdAuthenticationService _bankIdAuthenticationService;
+        private readonly ICertificateProvider _certificateProvider;
 
         public CollectController
             (IHttpClientFactory httpClientFactory,
-            ICertificateHandler certificateHandler,
             IConfiguration configuration,
-            IBankIdAuthenticationService bankIdAuthenticationService
-            )
+            IBankIdAuthenticationService bankIdAuthenticationService,
+            ICertificateProvider certificateProvider)
         {
             _httpClientFactory = httpClientFactory;
-            _certificateHandler = certificateHandler;
             _configuration = configuration;
             _bankIdAuthenticationService = bankIdAuthenticationService;
+            _certificateProvider = certificateProvider;
         }
 
         [HttpPost]
@@ -38,12 +41,13 @@ namespace BankAPI.Controllers
 
             try
             {
+
                 // Load the client certificate from a file or any secure storage.
-                var certificate = _certificateHandler.GetCertificate2();
+                var certificates = _certificateProvider.GetCertificate();
 
                 // Create an HttpClientHandler and assign the client certificate to it.
                 var clientHandler = new HttpClientHandler();
-                clientHandler.ClientCertificates.Add(certificate);
+                clientHandler.ClientCertificates.Add(certificates);
                 // Disable SSL certificate validation (Not recommended for production use!)
                 clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
                 // Ensure TLS 1.2 is used for the API call.
