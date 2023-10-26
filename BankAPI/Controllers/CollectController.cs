@@ -1,15 +1,10 @@
 ﻿using Entities.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
-using System.Net;
 using System.Text.Json;
 using Contracts.Interfaces;
 using Entities.Models.Response;
-using Azure.Identity;
-using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Secrets;
-using System.Security.Cryptography.X509Certificates;
+using Contracts.Interfaces.ControllerHelpers;
 
 namespace BankAPI.Controllers
 {
@@ -17,70 +12,42 @@ namespace BankAPI.Controllers
     [ApiController]
     public class CollectController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
         private readonly IBankIdAuthenticationService _bankIdAuthenticationService;
-        private readonly ICertificateProvider _certificateProvider;
+        private readonly IHttpClientService _httpClientService;
+        private readonly IErrorHandlingService _errorHandlingService;
 
         public CollectController
-            (IHttpClientFactory httpClientFactory,
-            IConfiguration configuration,
-            IBankIdAuthenticationService bankIdAuthenticationService,
-            ICertificateProvider certificateProvider)
+            (IBankIdAuthenticationService bankIdAuthenticationService,
+            IHttpClientService httpClientService,
+            IErrorHandlingService errorHandlingService)
         {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
             _bankIdAuthenticationService = bankIdAuthenticationService;
-            _certificateProvider = certificateProvider;
+            _httpClientService = httpClientService;
+            _errorHandlingService = errorHandlingService;
         }
 
         [HttpPost]
         public async Task<IActionResult> CollectPost([FromBody] OrderRef orderRef)
         {
-            const string testBaseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
-
             try
             {
+                const string baseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
 
-                // Load the client certificate from a file or any secure storage.
-                var certificates = _certificateProvider.GetCertificate();
-
-                // Create an HttpClientHandler and assign the client certificate to it.
-                var clientHandler = new HttpClientHandler();
-                clientHandler.ClientCertificates.Add(certificates);
-                // Disable SSL certificate validation (Not recommended for production use!)
-                clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-                // Ensure TLS 1.2 is used for the API call.
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-
-                // Instantiate the HttpClient with the custom HttpClientHandler.
-                var httpClient = new HttpClient(clientHandler);
-                httpClient.BaseAddress = new Uri(testBaseAddress);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                // API endpoint URL for the POST request.
+                using (var httpClient = _httpClientService.GetConfiguredClient(baseAddress))
                 using (var request = new HttpRequestMessage(HttpMethod.Post, "collect"))
                 {
                     ReturnWithoutEncoding(orderRef, request);
                     var response = await httpClient.SendAsync(request);
-                    return await NewMethod(response);
+                    return await ReturnResponseWithToken(response);
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                // Handle general API request errors
-                return StatusCode(500, $"API request failed: {ex.Message}");
             }
             catch (Exception ex)
             {
-                // Handle other exceptions that may occur during the API call.
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                return _errorHandlingService.HandleException(ex);
             }
         }
 
-        private async Task<IActionResult> NewMethod(HttpResponseMessage response)
+        private async Task<IActionResult> ReturnResponseWithToken(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)
             {
@@ -101,7 +68,7 @@ namespace BankAPI.Controllers
             }
             else
             {
-                //fropntend will handle here
+                //frontend will handle here
                 var content = await response.Content.ReadAsStringAsync();
                 return BadRequest(content);
             }

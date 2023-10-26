@@ -7,11 +7,7 @@ using Contracts.Services;
 using Entities.Models;
 using Contracts.Interfaces;
 using Entities.Models.Response;
-using Azure.Identity;
-using System.Security.Cryptography.X509Certificates;
-using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.AspNetCore.DataProtection;
+using Contracts.Interfaces.ControllerHelpers;
 
 namespace BankAPI.Controllers
 {
@@ -21,14 +17,22 @@ namespace BankAPI.Controllers
 
     public class BankAuthController : ControllerBase
     {
-
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICertificateProvider _certificateProvider;
+        private readonly IHttpClientService _httpClientService;
+        private readonly IErrorHandlingService _errorHandlingService;
 
-        public BankAuthController(IHttpClientFactory httpClientFactory,ICertificateProvider certificateProvider)
+
+        public BankAuthController
+            (IHttpClientFactory httpClientFactory,
+            ICertificateProvider certificateProvider,
+            IHttpClientService httpClientService,
+            IErrorHandlingService errorHandlingService)
         {
             _httpClientFactory = httpClientFactory;
             _certificateProvider = certificateProvider;
+            _httpClientService = httpClientService;
+            _errorHandlingService = errorHandlingService;
         }
 
         [HttpPost]
@@ -36,52 +40,24 @@ namespace BankAPI.Controllers
         {
             try
             {
-
-
-
-
-                // Load the client certificate from a file or any secure storage.
-                var certificatee = _certificateProvider.GetCertificate();
-
-                // Create an HttpClientHandler and assign the client certificate to it.
-                var handler = new HttpClientHandler();
-                handler.ClientCertificates.Add(certificatee);
-                // Disable SSL certificate validation (Not recommended for production use!)
-                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-                // Ensure TLS 1.2 is used for the API call.
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                // Instantiate the HttpClient with the custom HttpClientHandler.
-                var httpClient = new HttpClient(handler);
-                httpClient.BaseAddress = new Uri("https://appapi2.test.bankid.com/rp/v6.0/");
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                // API endpoint URL for the POST request.
-                using (var request = new HttpRequestMessage(HttpMethod.Post, "auth"))
+                const string baseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
+                using var httpClients = _httpClientService.GetConfiguredClient(baseAddress);
+                using var request = new HttpRequestMessage(HttpMethod.Post, "auth");
                 {
                     ReturnWithoutEncoding(endUserIp, request);
-                    var response = await httpClient.SendAsync(request);
-
+                    var response = await httpClients.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         var apiResponse = JsonSerializer.Deserialize<AuthResponse>(responseContent);
                         return Ok(apiResponse);
                     }
-
                     return BadRequest(await response.Content.ReadAsStringAsync());
                 }
             }
-            catch (HttpRequestException ex)
-            {
-                // Handle general API request errors
-                return StatusCode(500, $"API request failed: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                // Handle other exceptions that may occur during the API call.
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                return _errorHandlingService.HandleException(ex);
             }
         }
 

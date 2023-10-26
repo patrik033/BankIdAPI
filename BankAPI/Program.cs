@@ -1,7 +1,9 @@
 
 using BankAPI.Extensions;
 using Contracts.Implementations;
+using Contracts.Implementations.ControllerHelperImplementations;
 using Contracts.Interfaces;
+using Contracts.Interfaces.ControllerHelpers;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -11,6 +13,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton<IHttpClientHandlerService, HttpClientHandlerService>();
+builder.Services.AddSingleton<IHttpClientService, HttpClientService>();
+builder.Services.AddSingleton<IErrorHandlingService, ErrorHandlingService>();
+
 //extensions
 builder.Services.ConfigureAuthentication(builder.Configuration);
 

@@ -1,14 +1,10 @@
-﻿using Contracts.Interfaces;
+﻿using Contracts.Interfaces.ControllerHelpers;
 using Contracts.Services;
 using Entities.Models;
 using Entities.Models.Response;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-
 
 namespace BankAPI.Controllers
 {
@@ -16,57 +12,40 @@ namespace BankAPI.Controllers
     [ApiController]
     public class SignController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ICertificateProvider _certificateProvider;
-        public SignController(IHttpClientFactory httpClientFactory, ICertificateProvider certificateProvicer)
+        private readonly IHttpClientService _httpClientService;
+        private readonly IErrorHandlingService _errorHandlingService;
+        public SignController
+            (IHttpClientService httpClientService,
+            IErrorHandlingService errorHandlingService)
         {
-            _httpClientFactory = httpClientFactory;
-            _certificateProvider = certificateProvicer;
+            _httpClientService = httpClientService;
+            _errorHandlingService = errorHandlingService;
         }
 
         [HttpPost]
         public async Task<IActionResult> PostData([FromBody] SignRequest signRequest)
         {
+
             try
             {
-                var certificate = _certificateProvider.GetCertificate();
-                var handler = new HttpClientHandler();
-                handler.ClientCertificates.Add(certificate);
+                const string baseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
+                using var httpClients = _httpClientService.GetConfiguredClient(baseAddress);
+                using var request = new HttpRequestMessage(HttpMethod.Post, "sign");
 
-                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                var httpClient = new HttpClient(handler);
-                httpClient.BaseAddress = new Uri("https://appapi2.test.bankid.com/rp/v6.0/");
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                using (var request = new HttpRequestMessage(HttpMethod.Post, "sign"))
+                ReturnWithoutEncoding(signRequest, request);
+                var response = await httpClients.SendAsync(request);
+                if (response.IsSuccessStatusCode)
                 {
-
-                    var jsonData = JsonSerializer.Serialize(signRequest);
-                    var jsonContent = new JsonContentWithoutEncoding(jsonData);
-                    request.Content = jsonContent;
-
-                    var response = await httpClient.SendAsync(request);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        var apiResponse = JsonSerializer.Deserialize<AuthResponse>(responseContent);
-                        return Ok(apiResponse);
-                    }
-                    return BadRequest(await response.Content.ReadAsStringAsync());
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonSerializer.Deserialize<AuthResponse>(responseContent);
+                    return Ok(apiResponse);
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                // Handle general API request errors
-                return StatusCode(500, $"API request failed: {ex.Message}");
+                return BadRequest(await response.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
             {
                 // Handle other exceptions that may occur during the API call.
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                return _errorHandlingService.HandleException(ex);
             }
         }
 
@@ -82,7 +61,7 @@ namespace BankAPI.Controllers
 
             var signPdf = new PdfServices();
 
-            byte[] signedPdfBytes = signPdf.SignPdf(file, certificate, img,userData);
+            byte[] signedPdfBytes = signPdf.SignPdf(file, certificate, img, userData);
             return File(signedPdfBytes, "application/pdf", "SignedOutput.pdf");
         }
 
@@ -94,6 +73,13 @@ namespace BankAPI.Controllers
             var path = Path.Combine(basePath, "Certificates", "Sorting.pdf");
             var fileContens = System.IO.File.ReadAllBytes(path);
             return File(fileContens, "application/pdf", "Sorting.pdf");
+        }
+
+        private static void ReturnWithoutEncoding(SignRequest signRequest, HttpRequestMessage request)
+        {
+            var jsonData = JsonSerializer.Serialize(signRequest);
+            var jsonContent = new JsonContentWithoutEncoding(jsonData);
+            request.Content = jsonContent;
         }
     }
 }
