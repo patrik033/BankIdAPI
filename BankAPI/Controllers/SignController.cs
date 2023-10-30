@@ -14,12 +14,15 @@ namespace BankAPI.Controllers
     {
         private readonly IHttpClientService _httpClientService;
         private readonly IErrorHandlingService _errorHandlingService;
+        private readonly IBaseAddress _baseAddress;
         public SignController
             (IHttpClientService httpClientService,
-            IErrorHandlingService errorHandlingService)
+            IErrorHandlingService errorHandlingService,
+            IBaseAddress baseAddress)
         {
             _httpClientService = httpClientService;
             _errorHandlingService = errorHandlingService;
+            _baseAddress = baseAddress;
         }
 
         [HttpPost]
@@ -28,7 +31,7 @@ namespace BankAPI.Controllers
 
             try
             {
-                const string baseAddress = "https://appapi2.test.bankid.com/rp/v6.0/";
+                string baseAddress = _baseAddress.GetBaseAddress();
                 using var httpClients = _httpClientService.GetConfiguredClient(baseAddress);
                 using var request = new HttpRequestMessage(HttpMethod.Post, "sign");
 

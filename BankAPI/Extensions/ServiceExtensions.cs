@@ -1,6 +1,8 @@
 ﻿using Contracts.Implementations;
+using Contracts.Implementations.ControllerHelperImplementations;
 using Contracts.Implementations.ExtensionImplementations;
 using Contracts.Interfaces;
+using Contracts.Interfaces.ControllerHelpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -70,5 +72,24 @@ namespace BankAPI.Extensions
                 return new BankIdAuthenticationService(configuration);
             });
         }
+
+        public static void UseTestAddress(this IServiceCollection services, IConfiguration configuration)
+        {
+            var testAddress = configuration.GetValue<string>("BaseAddressConfiguration:TestAddress");
+            services.AddSingleton<IBaseAddress>(new TestAddressService(testAddress));
+        }
+
+        /// <summary>
+        /// Uses the BankIds production address.
+        /// To be able to use this make sure you are using a production certificate or the service will throw an 500 error with no message
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        public static void UseProductionAddress(this IServiceCollection services, IConfiguration baseAddressConfiguration)
+        {
+            var productionAddress = baseAddressConfiguration.GetValue<string>("BaseAddressConfiguration:ProductionAddress");
+            services.AddSingleton<IBaseAddress>(new ProductionAddressService(productionAddress));
+        }
+
     }
 }

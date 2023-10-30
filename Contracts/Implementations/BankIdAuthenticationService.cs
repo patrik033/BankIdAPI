@@ -10,7 +10,6 @@ namespace Contracts.Implementations
 {
     public class BankIdAuthenticationService : IBankIdAuthenticationService
     {
-
         private readonly IConfiguration _configuration;
 
         public BankIdAuthenticationService(IConfiguration configuration)
@@ -21,13 +20,12 @@ namespace Contracts.Implementations
         public string GenerateJwtToken(CompletionData completionData)
         {
             var claims = new[]
-        {
-            new Claim("bankIdIssueDate", completionData.bankIdIssueDate),
+            {new Claim("bankIdIssueDate", completionData.bankIdIssueDate),
             new Claim("ocspResponse", completionData.ocspResponse),
             new Claim("userGivenName", completionData.user.givenName),
             new Claim("userName", completionData.user.name),
             new Claim("userSurname", completionData.user.surname)
-        };
+            };
 
             var expiresAt = DateTime.UtcNow.AddMinutes(10);
             var accessToken = CreateToken(claims, expiresAt);
@@ -43,7 +41,7 @@ namespace Contracts.Implementations
                 (
                     _configuration["Jwt:Issuer"],
                     _configuration["Jwt:Audience"],
-                    claims:claims,
+                    claims: claims,
                     notBefore: DateTime.UtcNow,
                     expires: expiresAt,
                     signingCredentials: signIn);

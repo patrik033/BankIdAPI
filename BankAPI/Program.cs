@@ -4,6 +4,7 @@ using Contracts.Implementations;
 using Contracts.Implementations.ControllerHelperImplementations;
 using Contracts.Interfaces;
 using Contracts.Interfaces.ControllerHelpers;
+using Contracts.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -18,6 +19,11 @@ builder.Services.AddSingleton<IHttpClientHandlerService, HttpClientHandlerServic
 builder.Services.AddSingleton<IHttpClientService, HttpClientService>();
 builder.Services.AddSingleton<IErrorHandlingService, ErrorHandlingService>();
 
+builder.Services.Configure<BaseAddressConfiguration>(builder.Configuration.GetSection("BaseAddressConfiguration"));
+
+// Register the base address service
+
+
 //extensions
 builder.Services.ConfigureAuthentication(builder.Configuration);
 
@@ -26,6 +32,12 @@ builder.Services.ConfigureAuthentication(builder.Configuration);
 //await builder.Services.ConfigureAzureCertificateHandler("https://some.vault.azure.net/", "Bank");
 builder.Services.ConfigureCertificateHandler();
 builder.Services.ConfigureBankIdAuthenticationService(builder.Configuration);
+
+
+
+
+//builder.Services.UseProductionAddress();
+builder.Services.UseTestAddress(builder.Configuration);
 
 builder.Services.ConfigureCorse();
 
