@@ -5,6 +5,7 @@ using Entities.Models;
 using Entities.Models.Response;
 using Contracts.Interfaces.ControllerHelpers;
 
+
 namespace BankAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -36,7 +37,8 @@ namespace BankAPI.Controllers
                 using var httpClients = _httpClientService.GetConfiguredClient(baseAddress);
                 using var request = new HttpRequestMessage(HttpMethod.Post, "auth");
                 {
-                    ReturnWithoutEncoding(endUserIp, request);
+                    UtilityHelpers.ReturnWithoutEncoding(endUserIp, request);
+                  
                     var response = await httpClients.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
@@ -51,13 +53,6 @@ namespace BankAPI.Controllers
             {
                 return _errorHandlingService.HandleException(ex);
             }
-        }
-
-        private static void ReturnWithoutEncoding(EndUserIp endUserIp, HttpRequestMessage request)
-        {
-            var jsonData = JsonSerializer.Serialize(endUserIp);
-            var jsonContent = new JsonContentWithoutEncoding(jsonData);
-            request.Content = jsonContent;
         }
     }
 }

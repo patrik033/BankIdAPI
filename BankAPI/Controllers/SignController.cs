@@ -15,6 +15,7 @@ namespace BankAPI.Controllers
         private readonly IHttpClientService _httpClientService;
         private readonly IErrorHandlingService _errorHandlingService;
         private readonly IBaseAddress _baseAddress;
+
         public SignController
             (IHttpClientService httpClientService,
             IErrorHandlingService errorHandlingService,
@@ -28,14 +29,13 @@ namespace BankAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostData([FromBody] SignRequest signRequest)
         {
-
             try
             {
                 string baseAddress = _baseAddress.GetBaseAddress();
                 using var httpClients = _httpClientService.GetConfiguredClient(baseAddress);
                 using var request = new HttpRequestMessage(HttpMethod.Post, "sign");
 
-                ReturnWithoutEncoding(signRequest, request);
+                UtilityHelpers.ReturnWithoutEncoding(signRequest, request);
                 var response = await httpClients.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
@@ -66,23 +66,6 @@ namespace BankAPI.Controllers
 
             byte[] signedPdfBytes = signPdf.SignPdf(file, certificate, img, userData);
             return File(signedPdfBytes, "application/pdf", "SignedOutput.pdf");
-        }
-
-
-        [HttpGet]
-        public IActionResult GetFile()
-        {
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            var path = Path.Combine(basePath, "Certificates", "Sorting.pdf");
-            var fileContens = System.IO.File.ReadAllBytes(path);
-            return File(fileContens, "application/pdf", "Sorting.pdf");
-        }
-
-        private static void ReturnWithoutEncoding(SignRequest signRequest, HttpRequestMessage request)
-        {
-            var jsonData = JsonSerializer.Serialize(signRequest);
-            var jsonContent = new JsonContentWithoutEncoding(jsonData);
-            request.Content = jsonContent;
         }
     }
 }

@@ -38,7 +38,7 @@ namespace BankAPI.Controllers
                 using (var httpClient = _httpClientService.GetConfiguredClient(baseAddress))
                 using (var request = new HttpRequestMessage(HttpMethod.Post, "collect"))
                 {
-                    ReturnWithoutEncoding(orderRef, request);
+                    UtilityHelpers.ReturnWithoutEncoding(orderRef, request);
                     var response = await httpClient.SendAsync(request);
                     return await ReturnResponseWithToken(response);
                 }
@@ -74,13 +74,6 @@ namespace BankAPI.Controllers
                 var content = await response.Content.ReadAsStringAsync();
                 return BadRequest(content);
             }
-        }
-
-        private static void ReturnWithoutEncoding(OrderRef orderRef, HttpRequestMessage request)
-        {
-            var jsonData = JsonSerializer.Serialize(orderRef);
-            var jsonContent = new JsonContentWithoutEncoding(jsonData);
-            request.Content = jsonContent;
         }
     }
 }
